@@ -13,7 +13,7 @@ selector = []
 display = []
 count = 1
 share_count = 1
-shared_source = ['http://www.wunderground.com']
+shared_source = ['http://www.wunderground.com', 'weather.com']
 shared_viewer = []
 g = Gui()
 
@@ -23,7 +23,7 @@ def update():
     for log in selector:
         if log not in display:
             display.append(log)
-            mb.canvas.text([0,count], text = log)
+            share_history.canvas.text([0,count], text = log)
             count -= 12
     get_new_shares()
             
@@ -38,12 +38,9 @@ def print_entry():
         label.config(text = message)
     except:
         pass
-    pagehtml = url_display()
 
     
-def url_display():
-    count = 0
-    url = en.get()
+def url_display(url):
     site = urllib.urlopen(url)
     zsource = site.read()
     soup = BeautifulSoup(zsource)
@@ -60,9 +57,14 @@ def get_new_shares():
     for i in shared_source:
         if i not in shared_viewer:
             add_link(i)
-            new_shared_list.canvas.text([0,share_count], text = i)
+            link = new_shared_list.canvas.text([0,share_count], text = i, activefill = 'blue')
+            link.bind('<Double-1>', onObjectClick)
             share_count -= 12
 
+def onObjectClick(event):
+    index = event.widget.find_closest(event.x, event.y)
+    access = shared_viewer[index[0] - 1]
+    url_display(access)
 
 
 #General set-up
@@ -71,41 +73,46 @@ g.title('Minumum Deliverable URLSender')
 g.row()
 
 g.col()
+
+g.la(text = 'Welcome to musicswAPPer')
+g.bu(text = 'Update Data', command = update)  
+g.row([0,1], pady = 10)
+g.endrow()
+g.la(text = 'Share a link!')
 en = g.en(text = 'Insert URL here')
-g.row([0,1], pady = 30)
-g.endrow()
 g.bu(text = 'Share', command = print_entry)
+label = g.la()
 
-mb = g.sc(width = 500, height = 100)
-mb.canvas.configure(confine = False, scrollregion = (0,0,1000,1000))
-
-g.row([0,1], pady = 30)
-g.endrow()    
-g.bu(text = 'Update Data', command = update)   
-g.row([0,1], pady = 30)
+g.row([0,1], pady = 10)
 g.endrow()
 
-canvas = g.sc(width = 500, height = 500)
-canvas.canvas.configure(confine = False, scrollregion = (0,0,2000, 2000))
-
-
-label = g.la()
+g.la(text = 'Share History')
+share_history = g.sc(width = 500, height = 300)
+share_history.canvas.configure(confine = False, scrollregion = (0,0,1000,1000)) 
+ 
 g.endcol() 
 
-g.col([2, 0], pady = 30)
+g.col()
+g.ca(height = 100, width = 50)
 g.endcol()
 
 g.col()
 
-new_shared_list = g.sc(width = 500, height = 500)
+g.la(text = 'New Shares from Friends')
+new_shared_list = g.sc(width = 500, height = 300)
 new_shared_list.canvas.configure(confine = False, scrollregion = (0,0,1000,1000))
 
 g.row([0,1], pady = 30)
 g.endrow()
-show_button = g.bu(text = 'Show link')
+
+show_button = g.bu(text = 'Show link', command = print_entry)
+
 g.row([0,1], pady = 30)
 g.endrow()
-g.ca(width = 500, height = 500)
+
+canvas = g.sc(width = 500, height = 100)
+canvas.canvas.configure(confine = False, scrollregion = (0,0,2000, 2000))
+
 g.endcol()
 
 g.endrow()
