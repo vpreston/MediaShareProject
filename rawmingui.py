@@ -13,24 +13,29 @@ selector = []
 display = []
 count = 1
 share_count = 1
-shared_source = ['http://www.wunderground.com', 'weather.com']
+shared_source = ['http://www.wunderground.com', 'http://www.weather.com']
 shared_viewer = []
+point_total = 10
 g = Gui()
 
         
 def update():
     global count
+    global point_total
     for log in selector:
         if log not in display:
             display.append(log)
             share_history.canvas.text([0,count], text = log)
             count -= 12
+            point_total -= 1
     get_new_shares()
+    points.config(text = point_total)
             
 def print_entry():
-    text = en.get() 
-    follower = ' was shared with a friend!'
-    message = text + follower
+    text = en.get()
+    connection = friend.get() 
+    follower = ' was shared with '
+    message = text + follower + connection + '!'
     global selector
     if text not in selector:
         selector.append(text)
@@ -62,9 +67,13 @@ def get_new_shares():
             share_count -= 12
 
 def onObjectClick(event):
+    global point_total
+    point_total += 1
     index = event.widget.find_closest(event.x, event.y)
     access = shared_viewer[index[0] - 1]
     url_display(access)
+    
+    
 
 
 #General set-up
@@ -79,6 +88,7 @@ g.bu(text = 'Update Data', command = update)
 g.row([0,1], pady = 10)
 g.endrow()
 g.la(text = 'Share a link!')
+friend = g.en(text = 'Who do you want to share with?')
 en = g.en(text = 'Insert URL here')
 g.bu(text = 'Share', command = print_entry)
 label = g.la()
@@ -99,19 +109,17 @@ g.endcol()
 g.col()
 
 g.la(text = 'New Shares from Friends')
-new_shared_list = g.sc(width = 500, height = 300)
+new_shared_list = g.sc(width = 500, height = 100)
 new_shared_list.canvas.configure(confine = False, scrollregion = (0,0,1000,1000))
 
 g.row([0,1], pady = 30)
 g.endrow()
 
-show_button = g.bu(text = 'Show link', command = print_entry)
-
-g.row([0,1], pady = 30)
-g.endrow()
-
-canvas = g.sc(width = 500, height = 100)
+g.la(text = 'Link Preview')
+canvas = g.sc(width = 500, height = 300)
 canvas.canvas.configure(confine = False, scrollregion = (0,0,2000, 2000))
+
+points = g.la()
 
 g.endcol()
 
