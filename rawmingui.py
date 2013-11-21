@@ -27,15 +27,24 @@ shared_viewer = []
 point_total = 10
 g = Gui()
 
+def initialize():
+    global count
+    for thing in display.find():
+        share_history.canvas.text([0,count], text = thing['friend'] + ' ' + thing['share'])
+        count -= 12
+        
         
 def update():
     connection = friend.get()
     global count
     global point_total
-    for log in selector.find({'friend':connection}):
-        if log not in display.find():
-            display.insert({'friend':connection, 'share':log})
-            share_history.canvas.text([0,count], text = log)
+    for log in selector.find():
+        if log not in display.find() and not display.find({'share':connection}):
+            try:
+                display.insert(log)
+            except:
+                pass
+            share_history.canvas.text([0,count], text = log['friend'] + ' ' + log['share'])
             count -= 12
             point_total -= 1
     get_new_shares()
@@ -46,7 +55,7 @@ def print_entry():
     connection = friend.get() 
     follower = ' was shared with '
     message = text + follower + connection + '!'
-    if text not in selector.find():
+    if text not in selector.find({'friend':connection}):
         selector.insert({'friend':connection, 'share': text})
     try:
         label.config(text = message)
@@ -136,9 +145,10 @@ g.endrow()
     
 
 
-
+initialize()
 #launch the gui
 g.mainloop()
+
 
 
 
