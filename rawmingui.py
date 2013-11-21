@@ -8,9 +8,18 @@ from swampy.Gui import *
 import urllib
 from bs4 import *
 import string
+import pymongo
+import datetime
 
-selector = []
-display = []
+from pymongo import MongoClient
+client = MongoClient()
+
+db = client.test_database
+
+selector = db.selector
+display = db.display
+
+
 count = 1
 share_count = 1
 shared_source = ['http://www.wunderground.com', 'http://www.weather.com']
@@ -20,25 +29,25 @@ g = Gui()
 
         
 def update():
+    connection = friend.get()
     global count
     global point_total
-    for log in selector:
-        if log not in display:
-            display.append(log)
+    for log in selector.find({'friend':connection}):
+        if log not in display.find():
+            display.insert({'friend':connection, 'share':log})
             share_history.canvas.text([0,count], text = log)
             count -= 12
             point_total -= 1
     get_new_shares()
     points.config(text = point_total)
-            
+   
 def print_entry():
     text = en.get()
     connection = friend.get() 
     follower = ' was shared with '
     message = text + follower + connection + '!'
-    global selector
-    if text not in selector:
-        selector.append(text)
+    if text not in selector.find():
+        selector.insert({'friend':connection, 'share': text})
     try:
         label.config(text = message)
     except:
