@@ -16,8 +16,11 @@ client = MongoClient()
 
 db = client.test_database
 
-selector = db.selector
+share_hist = db.selector
 display = db.display
+
+share_hist.remove()
+display.remove()
 
 
 count = 1
@@ -38,12 +41,9 @@ def update():
     connection = friend.get()
     global count
     global point_total
-    for log in selector.find():
-        if log not in display.find() and not display.find({'share':connection}):
-            try:
-                display.insert(log)
-            except:
-                pass
+    for log in share_hist.find():
+        if log not in display.find():
+            display.insert(log)
             share_history.canvas.text([0,count], text = log['friend'] + ' ' + log['share'])
             count -= 12
             point_total -= 1
@@ -51,12 +51,13 @@ def update():
     points.config(text = point_total)
    
 def print_entry():
+    #TODO: Logic of not being able to share if same info needs to be added
     text = en.get()
     connection = friend.get() 
     follower = ' was shared with '
     message = text + follower + connection + '!'
-    if text not in selector.find({'friend':connection}):
-        selector.insert({'friend':connection, 'share': text})
+    if text not in share_hist.find({'friend':text}):
+        share_hist.insert({'friend':connection, 'share': text})
     try:
         label.config(text = message)
     except:
