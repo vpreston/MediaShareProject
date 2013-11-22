@@ -4,6 +4,7 @@ November 16, 2013
 Minimum Deliverable mock up - an attempt at creating a URL sender
 """
 
+#series of imports
 from swampy.Gui import *
 import urllib
 from bs4 import *
@@ -14,11 +15,19 @@ import datetime
 from pymongo import MongoClient
 client = MongoClient()
 
+#initialize database
 db = client.test_database
 
-share_hist = db.selector
+#names new databases within instance
+share_hist = db.share_hist
 display = db.display
 
+#clears the databases upon running script, remove these lines in hysteretic tests
+share_hist.remove()
+display.remove()
+
+
+#local variables, things to still transfer to database: shared_source, shared_viewer, point_total.  Count and share_count can stay local, just help to display things on the canvases, does not log data
 count = 1
 share_count = 1
 shared_source = ['http://www.wunderground.com', 'http://www.weather.com']
@@ -27,13 +36,18 @@ point_total = 10
 g = Gui()
 
 def initialize():
+    """
+    upon running the script, gets data from the database and updates the gui displays
+    """
     global count
     for thing in display.find():
         share_history.canvas.text([0,count], text = thing['friend'] + ' ' + thing['share'] + ' ' + str(thing['date']))
         count -= 12
 
 def update():
-    connection = friend.get()
+    """
+    when the update button is pushed, this looks at the database, and will print things not already in the display, as well as log displayed data (meaning that if the gui closes before update is pressed, the data is still saved, and will be displayed the next time update will be pressed)
+    """
     global count
     global point_total
     for log in share_hist.find():
@@ -53,6 +67,7 @@ def print_entry():
     message = text + follower + connection + '!'
     if  count == 1:
         share_hist.insert({'friend':connection,'share':text, 'date': datetime.datetime.utcnow()})
+        label.config(text = message)
         count -= 12
     else:
         instance_count = 0
@@ -67,6 +82,9 @@ def print_entry():
 
 
 def url_display(url):
+    """
+    Shows a links html text
+    """
     site = urllib.urlopen(url)
     zsource = site.read()
     soup = BeautifulSoup(zsource)
@@ -76,9 +94,15 @@ def url_display(url):
     site.close()
 
 def add_link(new_link):
+    """
+    adds a link to the shared_viewer display 
+    """
     return shared_viewer.append(new_link)
 
 def get_new_shares():
+    """
+    will update the recieved, or shared_viewer display
+    """
     global share_count
     for i in shared_source:
         if i not in shared_viewer:
@@ -88,6 +112,9 @@ def get_new_shares():
             share_count -= 12
 
 def onObjectClick(event):
+    """
+    allows us to double click on a link and show it
+    """
     global point_total
     point_total += 1
     index = event.widget.find_closest(event.x, event.y)
