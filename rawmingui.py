@@ -21,6 +21,9 @@ db = client.test_database
 #names new databases within instance
 share_hist = db.share_hist
 display = db.display
+point_total = db.point_total
+point_total.insert({'points':0})
+print point_total
 
 #clears the databases upon running script, remove these lines in hysteretic tests
 share_hist.remove()
@@ -32,7 +35,6 @@ count = 1
 share_count = 1
 shared_source = ['http://www.wunderground.com', 'http://www.weather.com']
 shared_viewer = []
-point_total = 10
 g = Gui()
 
 def initialize():
@@ -43,21 +45,24 @@ def initialize():
     for thing in display.find():
         share_history.canvas.text([0,count], text = thing['friend'] + ' ' + thing['share'] + ' ' + str(thing['date']))
         count -= 12
+    amount = point_total['points']
+    print amount
+    
 
 def update():
     """
     when the update button is pushed, this looks at the database, and will print things not already in the display, as well as log displayed data (meaning that if the gui closes before update is pressed, the data is still saved, and will be displayed the next time update will be pressed)
     """
     global count
-    global point_total
     for log in share_hist.find():
         if log not in display.find():
             display.insert(log)
             share_history.canvas.text([0,count], text = log['friend'] + ' ' + log['share'] + ' ' + str(log['date']))
             count -= 12
-            point_total -= 1
+            existing = points_total['points']
+            point_total.update({'points':existing-1})
     get_new_shares()
-    points.config(text = point_total)
+    points.config(text = point_total['points'])
    
 def print_entry():
     global count
@@ -115,8 +120,8 @@ def onObjectClick(event):
     """
     allows us to double click on a link and show it
     """
-    global point_total
-    point_total += 1
+    existing = point_total['points']
+    point_total.update({'points': existing + 1})
     index = event.widget.find_closest(event.x, event.y)
     access = shared_viewer[index[0] - 1]
     url_display(access)
@@ -179,13 +184,3 @@ initialize()
 #launch the gui
 g.mainloop()
 
-
-
-
-"""
-selector = [0,1,2]
-        mb = g.mb(text = selector[0])
-        for select in selector:
-            g.mi(mb, text = select, command=Callable(set_select, mb, select))
-
-"""
