@@ -22,19 +22,22 @@ db = client.test_database
 share_hist = db.share_hist
 display = db.display
 point_total = db.point_total
+shared_source = db.shared_source
+shared_viewer = db.shared_viewer
 
 #clears the databases upon running script, remove these lines in hysteretic tests
 share_hist.remove()
 display.remove()
 point_total.remove()
+shared_viewer.remove()
+shared_source.remove()
 point_total.insert({'points':10})
+shared_source.insert([{'friend': 'Alex', 'link': 'http://www.wunderground.com'},{'friend': 'Mark', 'link':'http://www.weather.com'}])
 
 
 #local variables, things to still transfer to database: shared_source, shared_viewer, point_total.  Count and share_count can stay local, just help to display things on the canvases, does not log data
 count = 1
 share_count = 1
-shared_source = ['http://www.wunderground.com', 'http://www.weather.com']
-shared_viewer = []
 g = Gui()
 
 def initialize():
@@ -105,17 +108,17 @@ def add_link(new_link):
     """
     adds a link to the shared_viewer display 
     """
-    return shared_viewer.append(new_link)
+    return shared_viewer.insert(new_link)
 
 def get_new_shares():
     """
     will update the recieved, or shared_viewer display
     """
     global share_count
-    for i in shared_source:
-        if i not in shared_viewer:
+    for i in shared_source.find():
+        if i not in shared_viewer.find():
             add_link(i)
-            link = new_shared_list.canvas.text([0,share_count], text = i, activefill = 'blue')
+            link = new_shared_list.canvas.text([0,share_count], text = str(i['link']), activefill = 'blue')
             link.bind('<Double-1>', onObjectClick)
             share_count -= 12
 
@@ -128,8 +131,10 @@ def onObjectClick(event):
         point_total.update({'points': existing}, {'$set': {'points':existing+1}})
         points.config(text = str(existing + 1))
     index = event.widget.find_closest(event.x, event.y)
-    access = shared_viewer[index[0] - 1]
-    url_display(access)
+    i = shared_viewer.find()
+    access = i[index[0] - 1]
+    link = access['link']
+    url_display(link)
     
     
 
