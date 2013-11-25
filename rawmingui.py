@@ -22,12 +22,12 @@ db = client.test_database
 share_hist = db.share_hist
 display = db.display
 point_total = db.point_total
-point_total.insert({'points':0})
-print point_total
 
 #clears the databases upon running script, remove these lines in hysteretic tests
 share_hist.remove()
 display.remove()
+point_total.remove()
+point_total.insert({'points':10})
 
 
 #local variables, things to still transfer to database: shared_source, shared_viewer, point_total.  Count and share_count can stay local, just help to display things on the canvases, does not log data
@@ -45,8 +45,9 @@ def initialize():
     for thing in display.find():
         share_history.canvas.text([0,count], text = thing['friend'] + ' ' + thing['share'] + ' ' + str(thing['date']))
         count -= 12
-    amount = point_total['points']
-    print amount
+    for thing in point_total.find():
+        amount = thing['points']
+    points.config(text = str(amount))
     
 
 def update():
@@ -59,10 +60,12 @@ def update():
             display.insert(log)
             share_history.canvas.text([0,count], text = log['friend'] + ' ' + log['share'] + ' ' + str(log['date']))
             count -= 12
-            existing = points_total['points']
-            point_total.update({'points':existing-1})
+            for thing in point_total.find():
+                existing = thing['points']
+                point_total.update({'points': existing}, {'$set': {'points':existing-1}})
+                points.config(text = str(existing-1))
     get_new_shares()
-    points.config(text = point_total['points'])
+    
    
 def print_entry():
     global count
@@ -120,8 +123,10 @@ def onObjectClick(event):
     """
     allows us to double click on a link and show it
     """
-    existing = point_total['points']
-    point_total.update({'points': existing + 1})
+    for thing in point_total.find():
+        existing = thing['points']
+        point_total.update({'points': existing}, {'$set': {'points':existing+1}})
+        points.config(text = str(existing + 1))
     index = event.widget.find_closest(event.x, event.y)
     access = shared_viewer[index[0] - 1]
     url_display(access)
