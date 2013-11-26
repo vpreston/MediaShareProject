@@ -18,14 +18,14 @@ client = MongoClient()
 #initialize database
 db = client.test_database
 
-#names new databases within instance
+#names new databases within instance, TODO: Potentially add a logged history database for full history of link views
 share_hist = db.share_hist
 display = db.display
 point_total = db.point_total
 shared_source = db.shared_source
 shared_viewer = db.shared_viewer
 
-#clears the databases upon running script, remove these lines in hysteretic tests
+#clears the databases upon running script, remove these lines in hysteretic tests, TODO: create an initial initializer upon the first runtime to set default values like points, or default views
 share_hist.remove()
 display.remove()
 point_total.remove()
@@ -35,7 +35,7 @@ point_total.insert({'points':10})
 shared_source.insert([{'friend': 'Alex', 'link': 'http://www.wunderground.com'},{'friend': 'Mark', 'link':'http://www.weather.com'}])
 
 
-#local variables, things to still transfer to database: shared_source, shared_viewer, point_total.  Count and share_count can stay local, just help to display things on the canvases, does not log data
+#global variables, these things don't log data, but just help us display it
 count = 1
 share_count = 1
 g = Gui()
@@ -45,15 +45,21 @@ def initialize():
     upon running the script, gets data from the database and updates the gui displays
     """
     global count
+    global share_count
     for thing in display.find():
         share_history.canvas.text([0,count], text = thing['friend'] + ' ' + thing['share'] + ' ' + str(thing['date']))
         count -= 12
     for thing in point_total.find():
         amount = thing['points']
     points.config(text = str(amount))
+    for thing in shared_viewer.find():
+        link = new_shared_list.canvas.text([0,share_count], text = str(thing['link']), activefill = 'blue')
+        link.bind('<Double-1>', onObjectClick)
+        share_count -= 12
     
 
 def update():
+    #TODO: Make some of the updating automatic perhaps?  This could also be renamed the refresh button!
     """
     when the update button is pushed, this looks at the database, and will print things not already in the display, as well as log displayed data (meaning that if the gui closes before update is pressed, the data is still saved, and will be displayed the next time update will be pressed)
     """
@@ -71,6 +77,9 @@ def update():
     
    
 def print_entry():
+    """
+    Allows shares to be made, will check to make sure nothing is a repeat, will log the data.  Interactive with the user.
+    """
     global count
     text = en.get()
     connection = friend.get() 
@@ -124,7 +133,7 @@ def get_new_shares():
 
 def onObjectClick(event):
     """
-    allows us to double click on a link and show it
+    allows us to double click on a link and show it, as well as remove it from the list of need to view links
     """
     for thing in point_total.find():
         existing = thing['points']
@@ -135,6 +144,9 @@ def onObjectClick(event):
     access = i[index[0] - 1]
     link = access['link']
     url_display(link)
+    shared_viewer.remove(access)
+    shared_source.remove(access)
+    
     
     
 
