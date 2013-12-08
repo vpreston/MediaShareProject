@@ -12,7 +12,6 @@ import string
 import pymongo
 import datetime
 
-
 from pymongo import MongoClient
 client = MongoClient()
 
