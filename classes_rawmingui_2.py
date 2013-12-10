@@ -68,9 +68,9 @@ class Controller(object):
                 model.display.insert(log)
                 self.share_history.canvas.text([0,count], text = log['friend'] + ' ' + log['share'] + ' ' + str(log['date']))
                 model.count -= 12
-                for thing in point_total.find():
+                for thing in model.point_total.find():
                     existing = thing['points']
-                    point_total.update({'points': existing}, {'$set': {'points':existing-1}})
+                    model.point_total.update({'points': existing}, {'$set': {'points':existing-1}})
                     points.config(text = str(existing-1))
         self.get_new_shares()    
    
@@ -97,58 +97,53 @@ class Controller(object):
                 model.share_hist.insert({'friend':connection,'share':text, 'date': datetime.datetime.utcnow()})
                 label.config(text = message)
 
-#class View(object):
+#possibly class View here?
 
-#    def url_display(url):
-#        """
-#        Shows a links html text
-#        """
-#        site = urllib.urlopen(url)
-#        zsource = site.read()
-#        soup = BeautifulSoup(zsource)
-#        displayer = soup.get_text()
-#        canvas.canvas.delete(ALL)
-#        canvas.canvas.text([0,1],anchor = 'nw', justify = 'left', text = displayer)
-#        site.close()
+    def url_display(self,url):
+        """
+        Shows a links html text
+        """
+        site = urllib.urlopen(url)
+        zsource = site.read()
+        soup = BeautifulSoup(zsource)
+        displayer = soup.get_text()
+        canvas.canvas.delete(ALL)
+        canvas.canvas.text([0,1],anchor = 'nw', justify = 'left', text = displayer)
+        site.close()
 
     def add_link(self,new_link,model):
         """
         adds a link to the shared_viewer display 
         """
         return model.shared_viewer.insert(new_link)
-#Stopped Here
-def get_new_shares():
-    """
-    will update the recieved, or shared_viewer display
-    """
-    global share_count
-    for i in shared_source.find():
-        if i not in shared_viewer.find():
-            add_link(i)
-            link = new_shared_list.canvas.text([0,share_count], text = str(i['link']), activefill = 'blue')
-            link.bind('<Double-1>', onObjectClick)
-            share_count -= 12
 
-def onObjectClick(event):
-    """
-    allows us to double click on a link and show it, as well as remove it from the list of need to view links
-    """
-    for thing in point_total.find():
-        existing = thing['points']
-        point_total.update({'points': existing}, {'$set': {'points':existing+1}})
-        points.config(text = str(existing + 1))
-    index = event.widget.find_closest(event.x, event.y)
-    i = shared_viewer.find()
-    access = i[index[0] - 1]
-    link = access['link']
-    url_display(link)
-    shared_viewer.remove(access)
-    shared_source.remove(access)
-    
-    
-    
+    def get_new_shares(self):
+        """
+        will update the recieved, or shared_viewer display
+        """
+        for i in model.shared_source.find():
+            if i not in model.shared_viewer.find():
+                add_link(i)
+                link = new_shared_list.canvas.text([0,share_count], text = str(i['link']), activefill = 'blue')
+                link.bind('<Double-1>', onObjectClick)
+                model.share_count -= 12
 
-
+    def onObjectClick(self,event):
+        """
+        allows us to double click on a link and show it, as well as remove it from the list of need to view links
+        """
+        for thing in model.point_total.find():
+            existing = thing['points']
+            model.point_total.update({'points': existing}, {'$set': {'points':existing+1}})
+            points.config(text = str(existing + 1))
+        index = event.widget.find_closest(event.x, event.y)
+        i = model.shared_viewer.find()
+        access = i[index[0] - 1]
+        link = access['link']
+        self.url_display(link)
+        model.shared_viewer.remove(access)
+        model.shared_source.remove(access)
+    
 #General set-up
 g.title('Minumum Deliverable URLSender')
 
