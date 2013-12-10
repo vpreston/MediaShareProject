@@ -73,7 +73,7 @@ class Controller(object):
                     point_total.update({'points': existing}, {'$set': {'points':existing-1}})
                     points.config(text = str(existing-1))
         self.get_new_shares()    
-   #I STOPPED HEREEEEEEEE
+   
     def print_entry(self,model):
         """
         Allows shares to be made, will check to make sure nothing is a repeat, will log the data.  Interactive with the user.
@@ -83,39 +83,40 @@ class Controller(object):
         follower = ' was shared with '
         message = text + follower + connection + '!'
         if  count == 1:
-            share_hist.insert({'friend':connection,'share':text, 'date': datetime.datetime.utcnow()})
+            model.share_hist.insert({'friend':connection,'share':text, 'date': datetime.datetime.utcnow()})
             label.config(text = message)
-            count -= 12
+            model.count -= 12
         else:
             instance_count = 0
-            for instance in share_hist.find():
+            for instance in model.share_hist.find():
                 if text == instance['share'] and connection == instance['friend']:
                     label.config(text = 'That is a repeat!')
                     return
                 instance_count += 1
             if instance_count == share_hist.count():
-                share_hist.insert({'friend':connection,'share':text, 'date': datetime.datetime.utcnow()})
+                model.share_hist.insert({'friend':connection,'share':text, 'date': datetime.datetime.utcnow()})
                 label.config(text = message)
 
+#class View(object):
 
-def url_display(url):
-    """
-    Shows a links html text
-    """
-    site = urllib.urlopen(url)
-    zsource = site.read()
-    soup = BeautifulSoup(zsource)
-    displayer = soup.get_text()
-    canvas.canvas.delete(ALL)
-    canvas.canvas.text([0,1],anchor = 'nw', justify = 'left', text = displayer)
-    site.close()
+#    def url_display(url):
+#        """
+#        Shows a links html text
+#        """
+#        site = urllib.urlopen(url)
+#        zsource = site.read()
+#        soup = BeautifulSoup(zsource)
+#        displayer = soup.get_text()
+#        canvas.canvas.delete(ALL)
+#        canvas.canvas.text([0,1],anchor = 'nw', justify = 'left', text = displayer)
+#        site.close()
 
-def add_link(new_link):
-    """
-    adds a link to the shared_viewer display 
-    """
-    return shared_viewer.insert(new_link)
-
+    def add_link(self,new_link,model):
+        """
+        adds a link to the shared_viewer display 
+        """
+        return model.shared_viewer.insert(new_link)
+#Stopped Here
 def get_new_shares():
     """
     will update the recieved, or shared_viewer display
