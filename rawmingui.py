@@ -109,6 +109,7 @@ def print_entry():
             instance_count += 1
         if instance_count == share_hist.count():
                 share_hist.insert({'friend':connection,'share':text, 'date': datetime.datetime.utcnow()})
+                shared_source.insert({connection:{'link': text, 'friend':'Victoria'}})
                 label.config(text = message)
 
 
