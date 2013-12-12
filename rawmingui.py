@@ -26,13 +26,17 @@ shared_source = db.shared_source
 shared_viewer = db.shared_viewer
 
 #clears the databases upon running script, remove these lines in hysteretic tests, TODO: create an initial initializer upon the first runtime to set default values like points, or default views
+#IMPORTANT: leave the shared_viewer.remove()
 share_hist.remove()
 display.remove()
 point_total.remove()
 shared_viewer.remove()
 shared_source.remove()
-point_total.insert({'points':10})
-shared_source.insert([{'friend': 'Alex', 'link': 'http://www.wunderground.com'},{'friend': 'Mark', 'link':'http://www.weather.com'}])
+shared_source.insert([{'Victoria':{'friend': 'Alex', 'link': 'http://www.wunderground.com'}},{'Victoria':{'friend': 'Mark', 'link':'http://www.weather.com'}}])
+
+#login credentials, TODO: First time launch sets these
+user = 'vlpreston19'
+passw = 'testing'
 
 
 #global variables, these things don't log data, but just help us display it
@@ -44,19 +48,26 @@ def initialize():
     """
     upon running the script, gets data from the database and updates the gui displays
     """
+
     global count
     global share_count
     for thing in display.find():
         share_history.canvas.text([0,count], text = thing['friend'] + ' ' + thing['share'] + ' ' + str(thing['date']))
         count -= 12
-    for thing in point_total.find():
-        amount = thing['points']
-    points.config(text = str(amount))
+    try:
+        for thing in point_total.find():
+            amount = thing['points']
+        points.config(text = str(amount))
+    except:
+        point_total.insert({'points':10})
+        for thing in point_total.find():
+            amount = thing['points']
+        points.config(text = str(amount))
     for thing in shared_viewer.find():
-        link = new_shared_list.canvas.text([0,share_count], text = str(thing['link']), activefill = 'blue')
+        link = new_shared_list.canvas.text([0,share_count], text = str(thing['Victoria']['link']), activefill = 'blue')
         link.bind('<Double-1>', onObjectClick)
         share_count -= 12
-    
+        
 
 def update():
     #TODO: Make some of the updating automatic perhaps?  This could also be renamed the refresh button!
@@ -98,6 +109,7 @@ def print_entry():
             instance_count += 1
         if instance_count == share_hist.count():
                 share_hist.insert({'friend':connection,'share':text, 'date': datetime.datetime.utcnow()})
+                shared_source.insert({connection:{'link': text, 'friend':'Victoria'}})
                 label.config(text = message)
 
 
@@ -124,8 +136,10 @@ def get_new_shares():
     will update the recieved, or shared_viewer display
     """
     global share_count
-    for i in shared_source.find():
-        if i not in shared_viewer.find():
+    for i in shared_viewer.find():
+                print i
+    for i in shared_source.distinct('Victoria'):
+        if i['friend'] not in shared_viewer.distinct('friend') and i['link'] not in shared_viewer.distinct('link'):
             add_link(i)
             link = new_shared_list.canvas.text([0,share_count], text = str(i['link']), activefill = 'blue')
             link.bind('<Double-1>', onObjectClick)
@@ -144,11 +158,7 @@ def onObjectClick(event):
     access = i[index[0] - 1]
     link = access['link']
     url_display(link)
-    shared_viewer.remove(access)
-    shared_source.remove(access)
-    
-    
-    
+    shared_source.remove({'Victoria': {'link':access['link'], 'friend':access['friend']}})
 
 
 #General set-up
@@ -159,7 +169,7 @@ g.row()
 g.col()
 
 g.la(text = 'Welcome to musicswAPPer')
-g.bu(text = 'Update Data', command = update)  
+g.bu(text = 'Refresh', command = update)  
 g.row([0,1], pady = 10)
 g.endrow()
 g.la(text = 'Share a link!')
