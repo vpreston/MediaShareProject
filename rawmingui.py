@@ -141,27 +141,13 @@ def url_display(url):
 
     player = gst.element_factory_make('playbin2', 'player')
     player.set_property('video-sink', None)
-    player.set_property('uri', 'file:///home/victoria/playingvid.mp4')
+    player.set_property('uri', 'file:///home/victoria/placlearyingvid.mp4')
     player.set_state(gst.STATE_PLAYING)
 
     bus = player.get_bus()
     bus.add_signal_watch()
     bus.enable_sync_message_emission()
     bus.connect('sync-message::element', on_sync_message, window_id)
-
-
-"""	
-if __name__ == '__main__':
-		run_things('http://www.youtube.com/watch?v=kZUPCB9533Y')
-    
-    site = urllib.urlopen(url)
-    zsource = site.read()
-    soup = BeautifulSoup(zsource)
-    displayer = soup.get_text()
-    canvas.canvas.delete(ALL)
-    canvas.canvas.text([0,1],anchor = 'nw', justify = 'left', text = displayer)
-    site.close()
-"""
 
 def on_sync_message(bus, message, window_id):
         if not message.structure is None:
@@ -251,6 +237,7 @@ canvas = g.ca(width = 500, height = 300, bg='black')
 canvas.configure(confine = False, scrollregion = (0,0,2000, 2000))
 
 points = g.la()
+
 
 g.endcol()
 
