@@ -12,8 +12,6 @@ import string
 import pymongo
 import datetime
 
-g = Gui()
-
 class Model(object):
 
     from pymongo import MongoClient

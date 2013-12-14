@@ -2,11 +2,24 @@ import pymongo
 import datetime
 
 from pymongo import MongoClient
+<<<<<<< HEAD
 client = MongoClient()
 
 
 db = client.test_database
 posts = db.posts
+=======
+client = MongoClient('mongodb://alex:tester@dharma.mongohq.com:10075/mediashareproject')
+
+
+db = client.mediashareproject
+
+db.add_user('alex', 'tester')
+
+posts = db.posts
+
+
+>>>>>>> 02e9c0c2f73e420a5f99ed8c01338b363ea20c08
 print posts
 
 for post in posts.find():

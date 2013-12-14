@@ -97,7 +97,7 @@ class MediaShare(object):
         	for instance in share_hist.find():
         		if text == instance['share'] and connection == instance['friend']:
         		    label.config(text = 'That is a repeat!')
-        		    return
+        		    
             	instance_count += 1
         	if instance_count == share_hist.count():
             	    share_hist.insert({'friend':connection,'share':text, 'date': datetime.datetime.utcnow()})
@@ -121,7 +121,7 @@ class MediaShare(object):
     	adds a link to the shared_viewer display
     	"""
     	return shared_viewer.insert(new_link)
-    	
+
 	def get_new_shares(self):
 		"""
     	will update the recieved, or shared_viewer display
