@@ -10,7 +10,7 @@ import os
 from pymongo import MongoClient
 client = MongoClient('mongodb://sofdes:sofdes@dharma.mongohq.com:10075/mediashareproject')
 
-db = client.test_database
+db = client.mediashareproject
 collection = db.test_collection
 
 post = {'author':'Victoria', 'text':'My first entry', 'tags': ['mongodb', 'python', 'pymongo'], 'date': datetime.datetime.utcnow()}
