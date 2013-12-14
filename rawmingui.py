@@ -247,7 +247,7 @@ g.row([0,1], pady = 30)
 g.endrow()
 
 g.la(text = 'Link Preview')
-canvas = g.ca(width = 500, height = 300)
+canvas = g.ca(width = 500, height = 300, bg='black')
 canvas.configure(confine = False, scrollregion = (0,0,2000, 2000))
 
 points = g.la()

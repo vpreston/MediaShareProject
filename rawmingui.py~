@@ -137,7 +137,7 @@ def url_display(url):
     os.system('youtube-dl -o playingvid.mp4 %s'%url)
     
     gobject.threads_init()
-    window_id = canvas.window.winfo_id()
+    window_id = canvas.winfo_id()
 
     player = gst.element_factory_make('playbin2', 'player')
     player.set_property('video-sink', None)
@@ -247,7 +247,7 @@ g.row([0,1], pady = 30)
 g.endrow()
 
 g.la(text = 'Link Preview')
-canvas = g.ca(width = 500, height = 300)
+canvas = g.ca(width = 500, height = 300, bg='black')
 canvas.configure(confine = False, scrollregion = (0,0,2000, 2000))
 
 points = g.la()

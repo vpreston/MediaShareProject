@@ -5,25 +5,17 @@ from pymongo import MongoClient
 <<<<<<< HEAD
 client = MongoClient('mongodb://sofdes:sofdes@dharma.mongohq.com:10075/mediashareproject')
 =======
-<<<<<<< HEAD
-client = MongoClient()
-
-
-db = client.test_database
-posts = db.posts
-=======
-client = MongoClient('mongodb://alex:tester@dharma.mongohq.com:10075/mediashareproject')
 >>>>>>> 4d9eb172c15e401ab0f75dde2787521eb3b6ef8b
 
+client = MongoClient('mongodb://alex:test@dharma.mongohq.com:10075/mediashareproject')
+
+<<<<<<< HEAD
+=======
 
 db = client.mediashareproject
-
-db.add_user('alex', 'test')
-
+>>>>>>> 4d9eb172c15e401ab0f75dde2787521eb3b6ef8b
 posts = db.posts
 
-
->>>>>>> 02e9c0c2f73e420a5f99ed8c01338b363ea20c08
 print posts
 
 for post in posts.find():
