@@ -141,7 +141,8 @@ def url_display(url):
 
     player = gst.element_factory_make('playbin2', 'player')
     player.set_property('video-sink', None)
-    player.set_property('uri', 'file:///home/victoria/playingvid.mp4')
+    x=os.path.dirname(os.path.realpath(__file__))
+    player.set_property('uri', 'file://%s/playingvid.mp4'%(x))
     player.set_state(gst.STATE_PLAYING)
 
     bus = player.get_bus()
