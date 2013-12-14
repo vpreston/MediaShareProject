@@ -12,7 +12,6 @@ import socket
 
 s = socket.socket()
 host = socket.gethostname()
-print host
 port = 8000
 s.bind(('', port))
 
