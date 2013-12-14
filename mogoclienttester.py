@@ -2,7 +2,7 @@ import pymongo
 import datetime
 
 from pymongo import MongoClient
-client = MongoClient()
+client = MongoClient('snapcracklepop',27017)
 
 
 db = client.test_database
