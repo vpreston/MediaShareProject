@@ -33,14 +33,18 @@ count = 1
 share_count = 1
 username = ''
 
+
+users = db.users
+users.remove()
+users.insert({'user':'hey', 'password':'there'})
+
+
+
 #login credentials
 def main():
     """
     Launches login system everytime the script is run
     """
-    users = db.users
-    users.remove()
-    users.insert({'user':'hey', 'password':'there'})
     global username
 
     def newusergui():
@@ -191,8 +195,14 @@ def launch():
         """
         global count
         global username
+        res = []
         text = en.get()
-        connection = friend.get() 
+        connection = friend.get()
+        for user in users.find():
+            res.append(user['user'])
+        if connection not in res:
+            label.config(text = 'Sorry, user not in our records')
+            return 
         follower = ' was shared with '
         message = text + follower + connection + '!'
         if  count == 1:
