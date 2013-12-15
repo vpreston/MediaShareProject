@@ -51,6 +51,7 @@ def main():
             g.quit()
             
         def newuser():
+            global username
             for user in users.find():
                 for info in user:
                     print info
@@ -124,16 +125,16 @@ def launch():
     point_total = db.point_total
     shared_source = db.shared_source
     shared_viewer = db.shared_viewer
+    point_total = db.point_total
+    
+    point_total.remove()
+   
 
     #clears the databases upon running script, remove these lines in hysteretic tests
     #IMPORTANT: leave the shared_viewer.remove()
-    share_hist.remove()
-    display.remove()
-    point_total.remove()
-    shared_viewer.remove()
-    shared_source.remove()
-    shared_source.insert([{'Victoria':{'friend': 'Alex', 'link': 'http://www.wunderground.com'}},{'Victoria':{'friend': 'Mark', 'link':'http://www.youtube.com/watch?v=kZUPCB9533Y'}}])
 
+    shared_viewer.remove()
+   
     def initialize():
         """
         upon running the script, gets data from the database and updates the gui displays
@@ -144,15 +145,19 @@ def launch():
         global username
         try:
             for thing in point_total.find():
+                print 'try'
                 amount = thing['points']
             points.config(text = str(amount))
         except:
-        
             point_total.insert({'points':10})
             for thing in point_total.find():
+                print 'except'
+                print thing
                 amount = thing['points']
             points.config(text = str(amount))
         for thing in display.find():
+            print 'in display'
+            print thing
             share_history.canvas.text([0,count], text = thing['friend'] + ' ' + thing['share'] + ' ' + str(thing['date']))
             count -= 12
         for thing in shared_viewer.find():
@@ -169,6 +174,7 @@ def launch():
         global count
         for log in share_hist.find():
             if log not in display.find():
+                print 'this is added to display', log
                 display.insert(log)
                 share_history.canvas.text([0,count], text = log['friend'] + ' ' + log['share'] + ' ' + str(log['date']))
                 count -= 12
@@ -328,6 +334,7 @@ def launch():
     gui.endcol()
 
     gui.endrow()
+    initialize()
     gui.mainloop()
     
 
