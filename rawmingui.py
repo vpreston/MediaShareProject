@@ -22,43 +22,31 @@ import os
 import gobject
 import gst
 from getpass import *
-
 from pymongo import MongoClient
-client = MongoClient()
-print client
 
-#initialize database
-db = client.test_database
+#establish verification database
+client = MongoClient('mongodb://sofdes:sofdes@dharma.mongohq.com:10075/mediashareproject')
+db = client.mediashareproject
 
-#names new databases within instance, TODO: Potentially add a logged history database for full history of link views
-share_hist = db.share_hist
-display = db.display
-point_total = db.point_total
-shared_source = db.shared_source
-shared_viewer = db.shared_viewer
+#global variables, these things don't log data, but just help us display it
+count = 1
+share_count = 1
+username = ''
 
-#clears the databases upon running script, remove these lines in hysteretic tests, TODO: create an initial initializer upon the first runtime to set default values like points, or default views
-#IMPORTANT: leave the shared_viewer.remove()
-share_hist.remove()
-display.remove()
-point_total.remove()
-shared_viewer.remove()
-shared_source.remove()
-shared_source.insert([{'Victoria':{'friend': 'Alex', 'link': 'http://www.wunderground.com'}},{'Victoria':{'friend': 'Mark', 'link':'http://www.youtube.com/watch?v=kZUPCB9533Y'}}])
-
-#login credentials, TODO: First time launch sets these
+#login credentials
 def main():
-    client = MongoClient()
-    db = client.test_database
-
+    """
+    Launches login system everytime the script is run
+    """
     users = db.users
     users.remove()
-    print users
     users.insert({'user':'hey', 'password':'there'})
-    for thing in users.find():
-        print thing
+    global username
 
     def newusergui():
+        """
+        for anyone who needs to register, this adds them to the database system
+        """
         def close():
             g.quit()
             
@@ -68,17 +56,15 @@ def main():
                     print info
                     print user[info]
                     if user[info]==newusername.get():
-                        print 'already in use'
                         label.config(text="That username is already in use.")
                         return
             if newpassword.get()==repeatnewpassword.get():
-                print 'running this loop'
                 users.insert({'user':newusername.get(), 'password': newpassword.get()})
-                print users
+                db.add_user(newusername.get(), newpassword.get())
                 label.config(text="Thank you for signing up!")
+                username = newusername.get()
                 close()
                 launch()
-                return True
             else:
                 label.config(text="Your passwords don't match! Please try again")
             
@@ -93,12 +79,16 @@ def main():
         
 
     def logingui():
-    
+        """
+        this launches the general sign-in gui for those who have registered
+        """
+        
         def close():
+            global username
             for user in users.find():
-                for info in user:
-                    if password.get()==user[info]:
+                    if password.get()==user['password'] and usernameentry.get() == user['user']:
                         label.config(text= "You are now logged in!")
+                        username = usernameentry.get()
                         g.quit()
                         launch()
                         return True 
@@ -106,7 +96,7 @@ def main():
                         label.config(text= "We do not recognize your username or password, please try again.")
                     
         usernamelabel=g.la(text = "MusicSwAPPer Username:  ")
-        username = g.en() 
+        usernameentry = g.en() 
         passwordlabel=g.la("MusicSwAPPer Password:  ")
         password = g.en(show = '*')
         button=g.bu(text="Let's get started!",command=close)
@@ -114,7 +104,7 @@ def main():
 
             
     g=Gui()
-    g.title('MusicSwAPPer')
+    g.title('Launch MusicSwAPPer')
     signuporlogin = g.la(text = 'Please Sign-In or Sign-Up!')
     g.row()
     login = g.bu(text = 'Sign in', command=logingui)
@@ -123,11 +113,26 @@ def main():
 
     g.mainloop()
 
-#global variables, these things don't log data, but just help us display it
-count = 1
-share_count = 1
 
 def launch():
+    """
+    launches the 'real' gui system, the one we interact with
+    """
+    #names new databases within instance, TODO: Potentially add a logged history database for full history of link views
+    share_hist = db.share_hist
+    display = db.display
+    point_total = db.point_total
+    shared_source = db.shared_source
+    shared_viewer = db.shared_viewer
+
+    #clears the databases upon running script, remove these lines in hysteretic tests
+    #IMPORTANT: leave the shared_viewer.remove()
+    share_hist.remove()
+    display.remove()
+    point_total.remove()
+    shared_viewer.remove()
+    shared_source.remove()
+    shared_source.insert([{'Victoria':{'friend': 'Alex', 'link': 'http://www.wunderground.com'}},{'hey':{'friend': 'Mark', 'link':'http://www.youtube.com/watch?v=kZUPCB9533Y'}}])
 
     def initialize():
         """
@@ -136,6 +141,7 @@ def launch():
 
         global count
         global share_count
+        global username
         try:
             for thing in point_total.find():
                 amount = thing['points']
@@ -150,7 +156,7 @@ def launch():
             share_history.canvas.text([0,count], text = thing['friend'] + ' ' + thing['share'] + ' ' + str(thing['date']))
             count -= 12
         for thing in shared_viewer.find():
-            link = new_shared_list.canvas.text([0,share_count], text = str(thing['Victoria']['link']), activefill = 'blue')
+            link = new_shared_list.canvas.text([0,share_count], text = str(thing[username]['link']), activefill = 'blue')
             link.bind('<Double-1>', onObjectClick)
             share_count -= 12
             
@@ -178,6 +184,7 @@ def launch():
         Allows shares to be made, will check to make sure nothing is a repeat, will log the data.  Interactive with the user.
         """
         global count
+        global username
         text = en.get()
         connection = friend.get() 
         follower = ' was shared with '
@@ -195,7 +202,7 @@ def launch():
                 instance_count += 1
             if instance_count == share_hist.count():
                     share_hist.insert({'friend':connection,'share':text, 'date': datetime.datetime.utcnow()})
-                    shared_source.insert({connection:{'link': text, 'friend':'Victoria'}})
+                    shared_source.insert({connection:{'link': text, 'friend':username}})
                     label.config(text = message)
 
 
@@ -244,9 +251,10 @@ def launch():
         will update the recieved, or shared_viewer display
         """
         global share_count
+        global username
         for i in shared_viewer.find():
                     print i
-        for i in shared_source.distinct('Victoria'):
+        for i in shared_source.distinct(username):
             if i['friend'] not in shared_viewer.distinct('friend') and i['link'] not in shared_viewer.distinct('link'):
                 add_link(i)
                 link = new_shared_list.canvas.text([0,share_count], text = str(i['link']), activefill = 'blue')
@@ -257,6 +265,7 @@ def launch():
         """
         allows us to double click on a link and show it, as well as remove it from the list of need to view links
         """
+        global username
         for thing in point_total.find():
             existing = thing['points']
             point_total.update({'points': existing}, {'$set': {'points':existing+1}})
@@ -266,7 +275,7 @@ def launch():
         access = i[index[0] - 1]
         link = access['link']
         url_display(link)
-        shared_source.remove({'Victoria': {'link':access['link'], 'friend':access['friend']}})
+        shared_source.remove({username: {'link':access['link'], 'friend':access['friend']}})
 
 
     #General set-up

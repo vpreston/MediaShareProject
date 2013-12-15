@@ -7,6 +7,8 @@ client = MongoClient('mongodb://sofdes:sofdes@dharma.mongohq.com:10075/mediashar
 
 db = client.mediashareproject
 
+db.add_user('alec', 'test')
+
 posts = db.posts
 
 print posts
