@@ -1,20 +1,12 @@
 """
-Victoria Preston
-November 16, 2013
-Minimum Deliverable mock up - an attempt at creating a URL sender
-
-TODO:
-- passwords/logins/setvariables for the module
-- networking
-- classing
-- link display
-- clean it up
+Victoria Preston, Alex Crease, Mark-Robin Giolando
+Beginning:November 16, 2013
+Final:December 17, 2013
+Development File
 """
 
 #series of imports
 from swampy.Gui import *
-import urllib
-from bs4 import *
 import string
 import pymongo
 import datetime
@@ -24,7 +16,7 @@ import gst
 from getpass import *
 from pymongo import MongoClient
 
-#establish verification database
+#establish database access, will not allow no-users access, hosted off the MongoHQ server systems, Sandbox prototype model
 client = MongoClient('mongodb://sofdes:sofdes@dharma.mongohq.com:10075/mediashareproject')
 db = client.mediashareproject
 
@@ -33,27 +25,19 @@ count = 1
 share_count = 1
 username = ''
 
-
+#establishing the database collections, the elements which will store the data with the database
 users = db.users
-users.remove()
-users.insert([{'user':'hey', 'password':'there'}, {'user':'victoria', 'password': 'preston'}])
 
-
-
-#login credentials
+#login system
 def main():
     """
-    Launches login system everytime the script is run
+    Launches login system everytime the script is run, users have the option of signing in, or signing up if they have not already established an account and accout information. Upon login/signup, the main application is launched
     """
-    global username
-
+    
     def newusergui():
         """
         for anyone who needs to register, this adds them to the database system
         """
-        def close():
-            g.quit()
-            
         def newuser():
             global username
             for user in users.find():
@@ -66,7 +50,6 @@ def main():
                 db.add_user(newusername.get(), newpassword.get())
                 label.config(text="Thank you for signing up!")
                 username = newusername.get()
-                close()
                 launch()
             else:
                 label.config(text="Your passwords don't match! Please try again")
@@ -104,8 +87,7 @@ def main():
         password = g.en(show = '*')
         button=g.bu(text="Let's get started!",command=close)
         label=g.la()
-
-            
+               
     g=Gui()
     g.title('Launch MusicSwAPPer')
     signuporlogin = g.la(text = 'Please Sign-In or Sign-Up!')
@@ -116,12 +98,11 @@ def main():
 
     g.mainloop()
 
-
 def launch():
     """
     launches the 'real' gui system, the one we interact with
     """
-    #names new databases within instance, TODO: Potentially add a logged history database for full history of link views
+    #names new databases that we will use now that the application is launched
     share_hist = db.share_hist
     display = db.display
     point_total = db.point_total
@@ -129,10 +110,8 @@ def launch():
     shared_viewer = db.shared_viewer
     point_total = db.point_total
 
-    #clears the databases upon running script, remove these lines in hysteretic tests
+    #clears the databases upon running script
     #IMPORTANT: leave the shared_viewer.remove()
-
-    point_total.remove()
     shared_viewer.remove()
 
     def initialize():
@@ -144,13 +123,13 @@ def launch():
         global share_count
         global username
         try:
-            for thing in point_total.find():
-                amount = thing[username]
+            for thing in point_total.distinct(username):
+                amount = thing
             points.config(text = str(amount))
         except:
             point_total.insert({username:10})
-            for thing in point_total.find():
-                amount = thing[username]
+            for thing in point_total.distinct(username):
+                amount = thing
             points.config(text = str(amount))
         for thing in display.distinct(username):
             share_history.canvas.text([0,count], text = thing['friend'] + ' ' + thing['share'] + ' ' + str(thing['date']))
@@ -162,7 +141,6 @@ def launch():
             
 
     def update():
-        #TODO: Make some of the updating automatic perhaps?  This could also be renamed the refresh button!
         """
         when the update button is pushed, this looks at the database, and will print things not already in the display, as well as log displayed data (meaning that if the gui closes before update is pressed, the data is still saved, and will be displayed the next time update will be pressed)
         """
@@ -173,10 +151,6 @@ def launch():
                 display.insert(log)
                 share_history.canvas.text([0,count], text = log[username]['friend'] + ' ' + log[username]['share'] + ' ' + str(log[username]['date']))
                 count -= 12
-                for thing in point_total.find():
-                    existing = thing[username]
-                    point_total.update({username: existing}, {'$set': {username:existing-1}})
-                    points.config(text = str(existing-1))
         get_new_shares()
         
        
@@ -196,8 +170,13 @@ def launch():
             return 
         follower = ' was shared with '
         message = text + follower + connection + '!'
+        for thing in point_total.distinct(username):
+            existing = thing
+            point_total.update({username: existing}, {'$inc': {username:(-1)}})
+            points.config(text = str(existing-1))
         if  count == 1:
             share_hist.insert({username:{'friend':connection,'share':text, 'date': datetime.datetime.utcnow()}})
+            shared_source.insert({connection:{'link': text, 'friend':username}})
             label.config(text = message)
             count -= 12
         else:
@@ -216,7 +195,8 @@ def launch():
 
     def url_display(url):
         """
-        Shows a links html text
+        downloads a youtube video into a file, then plays that file within the gui space
+        url - raw string url from gui input
         """
         myfile="playingvid.mp4"
         try:
@@ -274,7 +254,7 @@ def launch():
         global username
         for thing in point_total.find():
             existing = thing[username]
-            point_total.update({username: existing}, {'$set': {username:existing+1}})
+            point_total.update({username: existing}, {'$inc': {username:1}})
             points.config(text = str(existing + 1))
         index = event.widget.find_closest(event.x, event.y)
         i = shared_viewer.find()
