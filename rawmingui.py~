@@ -108,11 +108,12 @@ def launch():
     point_total = db.point_total
     shared_source = db.shared_source
     shared_viewer = db.shared_viewer
-    point_total = db.point_total
 
     #clears the databases upon running script
     #IMPORTANT: leave the shared_viewer.remove()
     shared_viewer.remove()
+
+    
 
     def initialize():
         """
@@ -175,22 +176,33 @@ def launch():
             point_total.update({username: existing}, {'$inc': {username:(-1)}})
             points.config(text = str(existing-1))
         if  count == 1:
-            share_hist.insert({username:{'friend':connection,'share':text, 'date': datetime.datetime.utcnow()}})
+            t = datetime.datetime.now()
+            if t.minute < 10:
+                minute = '0'+str(t.minute)
+            else:
+                minute = str(t.minute)
+            timestamp = str(t.month) + '/' + str(t.day) +'/' + str(t.year) + ',' +str(t.hour) + ':' + minute
+            share_hist.insert({username:{'friend':connection,'share':text, 'date': timestamp}})
             shared_source.insert({connection:{'link': text, 'friend':username}})
             label.config(text = message)
             count -= 12
         else:
             instance_count = 0
             for instance in share_hist.distinct(username):
-                print instance
                 if text == instance['share'] and connection == instance['friend']:
                     label.config(text = 'That is a repeat!')
                     return
                 instance_count += 1
             if instance_count == len(share_hist.distinct(username)):
-                    share_hist.insert({username:{'friend':connection,'share':text, 'date': datetime.datetime.utcnow()}})
-                    shared_source.insert({connection:{'link': text, 'friend':username}})
-                    label.config(text = message)
+                t = datetime.datetime.now()
+                if t.minute < 10:
+                    minute = '0'+str(t.minute)
+                else:
+                    minute = str(t.minute)
+                timestamp = str(t.month) + '/' + str(t.day) +'/' + str(t.year) + ',' +str(t.hour) + ':' + minute
+                share_hist.insert({username:{'friend':connection,'share':text, 'date': timestamp}})
+                shared_source.insert({connection:{'link': text, 'friend':username}})
+                label.config(text = message)
 
 
     def url_display(url):
@@ -253,6 +265,7 @@ def launch():
         """
         global username
         for thing in point_total.find():
+            print thing
             existing = thing[username]
             point_total.update({username: existing}, {'$inc': {username:1}})
             points.config(text = str(existing + 1))
@@ -265,52 +278,73 @@ def launch():
 
 
     #General set-up
+    pretty = 'light cyan'
+
     gui = Gui()
-    gui.title('Minumum Deliverable URLSender')
+    gui.title('MusicswAPPer')
+
 
     gui.row()
-
-    gui.col()
-
-    gui.la(text = 'Welcome to musicswAPPer')
-    gui.bu(text = 'Refresh', command = update)  
-    gui.row([0,1], pady = 10)
+    gui.la(text = 'Welcome to the swAPP', bg = 'black', fg='cyan', justify = 'left', font = ('Times', 20, 'bold italic'), height = 2, relief = 'groove')
     gui.endrow()
-    gui.la(text = 'Share a link!')
-    friend = gui.en(text = 'Who do you want to share with?')
-    en = gui.en(text = 'Insert URL here')
-    gui.bu(text = 'Share', command = print_entry)
-    label = gui.la()
+    gui.row(bg=pretty)
+    gui.col(bg=pretty)
+    gui.bu(text = 'Refresh', fg = 'forest green', font = ('Times', 15, 'bold'), bg=pretty, activeforeground='forest green', activebackground='powder blue', command = update) 
+    gui.row([0,1], pady = 10, bg=pretty)
+    gui.endrow()
+    gui.la(text = 'Share a link', bg = pretty, font = ('Times', 13, 'italic'), anchor = 'left', justify='left')
+    friend = gui.en(text = 'Who do you want to share with?', disabledforeground = 'light gray', fg = 'black', font = ('Times', 12))
+    en = gui.en(text = 'Insert URL here', font = ('Times', 12))
+    gui.bu(text = 'Share', font = ('Times', 15, 'bold'), bg = pretty, fg = 'forest green', activebackground = 'powder blue', activeforeground = 'forest green', command = print_entry)
+    label = gui.la(bg=pretty, font=('Times', 13))
 
-    gui.row([0,1], pady = 10)
+    gui.row([0,1], pady = 10, bg=pretty)
     gui.endrow()
 
-    gui.la(text = 'Share History')
+    gui.la(text = 'Share history', bg=pretty, font=('Times',13, 'italic'))
     share_history = gui.sc(width = 500, height = 300)
     share_history.canvas.configure(confine = False, scrollregion = (0,0,1000,1000)) 
      
     gui.endcol() 
 
-    gui.col()
-    gui.ca(height = 100, width = 50)
+    gui.col(bg=pretty)
+    gui.ca(height = 100, width = 5, bg=pretty, bd=0)
+    gui.endcol()
+    gui.col(bg=pretty)
+    gui.ca(height = 10, width = 5, bg=pretty, bd=0)
+    gui.ca(height = 10, width = 5, bg='black',bd=0)
+    gui.ca(height = 10, width = 5, bg=pretty,bd=0)
+    gui.ca(height = 10, width = 5, bg='black',bd=0)
+    gui.ca(height = 10, width = 5, bg=pretty,bd=0)
+    gui.ca(height = 10, width = 5, bg='black',bd=0)
+    gui.ca(height = 10, width = 5, bg=pretty,bd=0)
+    gui.ca(height = 10, width = 5, bg='black',bd=0)
+    gui.ca(height = 10, width = 5, bg=pretty,bd=0)
+    gui.endcol()
+    gui.col(bg=pretty)
+    gui.ca(height = 100, width = 5, bg=pretty)
     gui.endcol()
 
-    gui.col()
+    gui.col(bg=pretty)
 
-    gui.la(text = 'New Shares from Friends')
+    gui.la(text = 'New Shares from Friends', bg = pretty, font=('Times', 13, 'italic'))
     new_shared_list = gui.sc(width = 500, height = 100)
     new_shared_list.canvas.configure(confine = False, scrollregion = (0,0,1000,1000))
 
-    gui.row([0,1], pady = 30)
+    gui.row([0,1], pady = 30, bg=pretty)
     gui.endrow()
 
-    gui.la(text = 'Link Preview')
+    gui.la(text = 'Viewer', bg=pretty, font = ('Times', 13, 'italic'))
     canvas = gui.ca(width = 500, height = 300, bg='black')
     canvas.configure(confine = False, scrollregion = (0,0,2000, 2000))
 
-    points = gui.la()
+    points = gui.la(bg=pretty)
 
 
+    gui.endcol()
+
+    gui.col(bg=pretty)
+    gui.ca(height = 100, width = 5, bg=pretty)
     gui.endcol()
 
     gui.endrow()
