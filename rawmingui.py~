@@ -25,6 +25,7 @@ count = 1
 share_count = 1
 username = ''
 
+
 #establishing the database collections, the elements which will store the data with the database
 users = db.users
 
@@ -111,7 +112,6 @@ def launch():
 
     #clears the databases upon running script
     #IMPORTANT: leave the shared_viewer.remove()
-    shared_viewer.remove()
 
     
 
