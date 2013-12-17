@@ -265,10 +265,11 @@ def launch():
         """
         global username
         for thing in point_total.find():
-            print thing
-            existing = thing[username]
-            point_total.update({username: existing}, {'$inc': {username:1}})
-            points.config(text = str(existing + 1))
+            for key in thing:
+                if key == username:
+                    existing = thing[username]
+                    point_total.update({username: existing}, {'$inc': {username:0}})
+                    points.config(text = str(existing + 1))
         index = event.widget.find_closest(event.x, event.y)
         i = shared_viewer.find()
         access = i[index[0] - 1]

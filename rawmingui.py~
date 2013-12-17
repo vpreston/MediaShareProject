@@ -265,10 +265,11 @@ def launch():
         """
         global username
         for thing in point_total.find():
-            print thing
-            existing = thing[username]
-            point_total.update({username: existing}, {'$inc': {username:1}})
-            points.config(text = str(existing + 1))
+            for key in thing:
+                if key == username:
+                    existing = thing[username]
+                    point_total.update({username: existing}, {'$inc': {username:0}})
+                    points.config(text = str(existing + 1))
         index = event.widget.find_closest(event.x, event.y)
         i = shared_viewer.find()
         access = i[index[0] - 1]
@@ -296,7 +297,7 @@ def launch():
     friend = gui.en(text = 'Who do you want to share with?', disabledforeground = 'light gray', fg = 'black', font = ('Times', 12))
     en = gui.en(text = 'Insert URL here', font = ('Times', 12))
     gui.bu(text = 'Share', font = ('Times', 15, 'bold'), bg = pretty, fg = 'forest green', activebackground = 'powder blue', activeforeground = 'forest green', command = print_entry)
-    label = gui.la(bg=pretty, font=('Times', 13))
+    label = gui.la(bg=pretty, font=('Times', 11))
 
     gui.row([0,1], pady = 10, bg=pretty)
     gui.endrow()
