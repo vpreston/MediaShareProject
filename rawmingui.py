@@ -269,7 +269,7 @@ def launch():
             for key in thing:
                 if key == username:
                     existing = thing[username]
-                    point_total.update({username: existing}, {'$inc': {username:0}})
+                    point_total.update({username: existing}, {'$inc': {username:1}})
                     points.config(text = str(existing + 1))
         index = event.widget.find_closest(event.x, event.y)
         i = shared_viewer.find()

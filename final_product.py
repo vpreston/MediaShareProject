@@ -25,6 +25,7 @@ count = 1
 share_count = 1
 username = ''
 
+
 #establishing the database collections, the elements which will store the data with the database
 users = db.users
 
@@ -135,7 +136,7 @@ def launch():
         for thing in display.distinct(username):
             share_history.canvas.text([0,count], text = thing['friend'] + ' ' + thing['share'] + ' ' + str(thing['date']))
             count -= 12
-        for thing in shared_viewer.find():
+        for thing in shared_viewer.distinct(username):
             link = new_shared_list.canvas.text([0,share_count], text = str(thing[username]['link']), activefill = 'blue')
             link.bind('<Double-1>', onObjectClick)
             share_count -= 12
@@ -268,7 +269,7 @@ def launch():
             for key in thing:
                 if key == username:
                     existing = thing[username]
-                    point_total.update({username: existing}, {'$inc': {username:0}})
+                    point_total.update({username: existing}, {'$inc': {username:1}})
                     points.config(text = str(existing + 1))
         index = event.widget.find_closest(event.x, event.y)
         i = shared_viewer.find()
